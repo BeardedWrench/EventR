@@ -7,7 +7,7 @@ namespace Persistence
         public static async Task SeedData(DataContext context)
         {
             if (context.Events.Any()) return;
-            
+
             var events = new List<Event>
             {
                 new Event
