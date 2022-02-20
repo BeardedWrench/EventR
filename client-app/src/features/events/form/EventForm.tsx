@@ -1,14 +1,18 @@
 import { observer } from 'mobx-react-lite';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
+import { Link, useHistory, useParams } from 'react-router-dom';
 import { Button, Form, Segment } from 'semantic-ui-react';
 import { useStore } from '../../../app/stores/store';
+import { v4 as uuid } from 'uuid';
+import LoadingComponent from '../../../app/layout/LoadingComponent';
 
 export default observer(function EventForm() {
+  const history = useHistory();
   const { eventStore } = useStore();
-  const { selectedEvent, closeForm, createEvent, updateEvent, loading } =
+  const { createEvent, updateEvent, loading, loadingInitial, loadEvent } =
     eventStore;
-
-  const initialState = selectedEvent ?? {
+  const { id } = useParams<{ id: string }>();
+  const [event, setEvent] = useState({
     id: '',
     title: '',
     category: '',
@@ -16,12 +20,26 @@ export default observer(function EventForm() {
     date: '',
     city: '',
     venue: '',
-  };
+  });
 
-  const [event, setEvent] = useState(initialState);
+  useEffect(() => {
+    if (id) loadEvent(id).then((event) => setEvent(event!));
+  }, [id, loadEvent]);
 
   function handleSubmit() {
-    event.id ? updateEvent(event) : createEvent(event);
+    if (event.id.length === 0) {
+      let newEvent = {
+        ...event,
+        id: uuid(),
+      };
+      createEvent(newEvent).then(() => {
+        history.push(`/events/${newEvent.id}`);
+      });
+    } else {
+      updateEvent(event).then(() => {
+        history.push(`/events/${event.id}`);
+      });
+    }
   }
 
   function handleChange(
@@ -30,6 +48,8 @@ export default observer(function EventForm() {
     const { name, value } = e.target;
     setEvent({ ...event, [name]: value });
   }
+
+  if (loadingInitial) return <LoadingComponent content="Loading Event..." />;
 
   return (
     <Segment clearing>
@@ -79,7 +99,8 @@ export default observer(function EventForm() {
           content="Submit"
         />
         <Button
-          onClick={() => closeForm()}
+          as={Link}
+          to="/events"
           floated="right"
           type="button"
           content="Cancel"

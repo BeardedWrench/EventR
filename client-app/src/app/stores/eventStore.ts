@@ -1,7 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import agent from '../api/agent';
 import Event from '../models/Event';
-import { v4 as uuid } from 'uuid';
 
 export default class EventStore {
   eventRegistry = new Map<string, Event>();
@@ -14,6 +13,15 @@ export default class EventStore {
     makeAutoObservable(this);
   }
 
+  private setEvent = (event: Event) => {
+    event.date = event.date.split('T')[0];
+    this.eventRegistry.set(event.id, event);
+  };
+
+  private getEvent = (id: string) => {
+    return this.eventRegistry.get(id);
+  };
+
   get eventsByDate() {
     return Array.from(this.eventRegistry.values()).sort(
       (a, b) => Date.parse(a.date) - Date.parse(b.date)
@@ -21,11 +29,11 @@ export default class EventStore {
   }
 
   loadEvents = async () => {
+    this.loadingInitial = true;
     try {
       const events = await agent.Events.list();
       events.forEach((evt) => {
-        evt.date = evt.date.split('T')[0];
-        this.eventRegistry.set(evt.id, evt);
+        this.setEvent(evt);
       });
       this.setLoadingInitial(false);
     } catch (error) {
@@ -34,31 +42,34 @@ export default class EventStore {
     }
   };
 
+  loadEvent = async (id: string) => {
+    let event = this.getEvent(id);
+    if (event) {
+      this.selectedEvent = event;
+      return event;
+    } else {
+      this.loadingInitial = true;
+      try {
+        event = await agent.Events.details(id);
+        this.setEvent(event);
+        runInAction(() => {
+          this.selectedEvent = event;
+        });
+        this.setLoadingInitial(false);
+        return event;
+      } catch (error) {
+        console.log(error);
+        this.setLoadingInitial(false);
+      }
+    }
+  };
+
   setLoadingInitial = (state: boolean) => {
     this.loadingInitial = state;
   };
 
-  selectEvent = (id: string) => {
-    this.selectedEvent = this.eventRegistry.get(id);
-  };
-
-  cancelSelectedEvent = () => {
-    this.selectedEvent = undefined;
-  };
-
-  openForm = (id?: string) => {
-    id ? this.selectEvent(id) : this.cancelSelectedEvent();
-    this.editMode = true;
-  };
-
-  closeForm = () => {
-    this.editMode = false;
-  };
-
   createEvent = async (event: Event) => {
     this.loading = true;
-    event.id = uuid();
-
     try {
       await agent.Events.create(event);
       runInAction(() => {
@@ -99,7 +110,6 @@ export default class EventStore {
       await agent.Events.delete(id);
       runInAction(() => {
         this.eventRegistry.delete(id);
-        if (this.selectedEvent?.id === id) this.cancelSelectedEvent();
         this.loading = false;
       });
     } catch (error) {
