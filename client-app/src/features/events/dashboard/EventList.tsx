@@ -1,21 +1,13 @@
-import React, { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 import { SyntheticEvent } from 'react';
 import { Button, Item, Label, Segment } from 'semantic-ui-react';
-import Event from '../../../app/models/Event';
+import { useStore } from '../../../app/stores/store';
 
-interface Props {
-  events: Event[];
-  selectEvent: (id: string) => void;
-  deleteEvent: (id: string) => void;
-  submitting: boolean;
-}
+export default observer(function EventList() {
+  const { eventStore } = useStore();
+  const { loading, deleteEvent, eventsByDate } = eventStore;
 
-export default function EventList({
-  events,
-  selectEvent,
-  deleteEvent,
-  submitting,
-}: Props) {
   const [target, setTarget] = useState('');
 
   function handleEventDelete(e: SyntheticEvent<HTMLButtonElement>, id: string) {
@@ -25,7 +17,7 @@ export default function EventList({
   return (
     <Segment>
       <Item.Group divided>
-        {events.map((event) => {
+        {eventsByDate.map((event) => {
           return (
             <Item key={event.id}>
               <Item.Content>
@@ -39,7 +31,7 @@ export default function EventList({
                 </Item.Description>
                 <Item.Extra>
                   <Button
-                    onClick={() => selectEvent(event.id)}
+                    onClick={() => eventStore.selectEvent(event.id)}
                     floated="right"
                     content="View"
                     color="blue"
@@ -47,7 +39,7 @@ export default function EventList({
                   <Button
                     name={event.id}
                     onClick={(e) => handleEventDelete(e, event.id)}
-                    loading={submitting && target === event.id}
+                    loading={loading && target === event.id}
                     floated="right"
                     content="Delete"
                     color="red"
@@ -61,4 +53,4 @@ export default function EventList({
       </Item.Group>
     </Segment>
   );
-}
+});

@@ -1,21 +1,14 @@
-import React, { ChangeEvent, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { ChangeEvent, useState } from 'react';
 import { Button, Form, Segment } from 'semantic-ui-react';
-import Event from '../../../app/models/Event';
+import { useStore } from '../../../app/stores/store';
 
-interface Props {
-  event: Event | undefined;
-  closeForm: () => void;
-  createOrEdit: (event: Event) => void;
-  submitting: boolean;
-}
+export default observer(function EventForm() {
+  const { eventStore } = useStore();
+  const { selectedEvent, closeForm, createEvent, updateEvent, loading } =
+    eventStore;
 
-export default function EventForm({
-  event: selectedActivity,
-  closeForm,
-  createOrEdit,
-  submitting,
-}: Props) {
-  const initialState = selectedActivity ?? {
+  const initialState = selectedEvent ?? {
     id: '',
     title: '',
     category: '',
@@ -28,7 +21,7 @@ export default function EventForm({
   const [event, setEvent] = useState(initialState);
 
   function handleSubmit() {
-    createOrEdit(event);
+    event.id ? updateEvent(event) : createEvent(event);
   }
 
   function handleChange(
@@ -79,7 +72,7 @@ export default function EventForm({
           onChange={handleChange}
         />
         <Button
-          loading={submitting}
+          loading={loading}
           floated="right"
           positive
           type="submit"
@@ -94,4 +87,4 @@ export default function EventForm({
       </Form>
     </Segment>
   );
-}
+});

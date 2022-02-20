@@ -1,62 +1,23 @@
-import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { Grid } from 'semantic-ui-react';
-import Event from '../../../app/models/Event';
+import { useStore } from '../../../app/stores/store';
 import EventDetails from '../details/EventDetails';
 import EventForm from '../form/EventForm';
 import EventList from './EventList';
 
-interface Props {
-  events: Event[];
-  selectedEvent: Event | undefined;
-  selectEvent: (id: string) => void;
-  cancelSelectEvent: () => void;
-  editMode: boolean;
-  openForm: (id: string) => void;
-  closeForm: () => void;
-  createOrEdit: (event: Event) => void;
-  deleteEvent: (id: string) => void;
-  submitting: boolean;
-}
+export default observer(function EventDashboard() {
+  const { eventStore } = useStore();
+  const { selectedEvent, editMode } = eventStore;
 
-export default function EventDashboard({
-  events,
-  selectedEvent,
-  selectEvent,
-  cancelSelectEvent,
-  editMode,
-  openForm,
-  closeForm,
-  createOrEdit,
-  deleteEvent,
-  submitting,
-}: Props) {
   return (
     <Grid>
       <Grid.Column width="10">
-        <EventList
-          events={events}
-          selectEvent={selectEvent}
-          deleteEvent={deleteEvent}
-          submitting={submitting}
-        />
+        <EventList />
       </Grid.Column>
       <Grid.Column width="6">
-        {selectedEvent && !editMode && (
-          <EventDetails
-            event={selectedEvent}
-            cancelSelectEvent={cancelSelectEvent}
-            openForm={openForm}
-          />
-        )}
-        {editMode && (
-          <EventForm
-            closeForm={closeForm}
-            event={selectedEvent}
-            createOrEdit={createOrEdit}
-            submitting={submitting}
-          />
-        )}
+        {selectedEvent && !editMode && <EventDetails />}
+        {editMode && <EventForm />}
       </Grid.Column>
     </Grid>
   );
-}
+});

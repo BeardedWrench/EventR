@@ -1,18 +1,14 @@
-import React from 'react';
 import { Button, Card, Image } from 'semantic-ui-react';
-import Event from '../../../app/models/Event';
+import LoadingComponent from '../../../app/layout/LoadingComponent';
+import { useStore } from '../../../app/stores/store';
 
-interface Props {
-  event: Event;
-  cancelSelectEvent: () => void;
-  openForm: (id: string) => void;
-}
+export default function EventDetails() {
+  const { eventStore } = useStore();
 
-export default function EventDetails({
-  event,
-  cancelSelectEvent,
-  openForm,
-}: Props) {
+  const { selectedEvent: event, openForm, cancelSelectedEvent } = eventStore;
+
+  if (!event) return <LoadingComponent />;
+
   return (
     <Card fluid>
       <Image src={`/assets/categoryImages/${event.category}.jpg`} />
@@ -32,7 +28,7 @@ export default function EventDetails({
             content="Edit"
           />
           <Button
-            onClick={() => cancelSelectEvent()}
+            onClick={() => cancelSelectedEvent()}
             basic
             color="grey"
             content="Cancel"
