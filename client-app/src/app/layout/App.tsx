@@ -7,7 +7,7 @@ import HomePage from '../../features/home/HomePage';
 import EventForm from '../../features/events/form/EventForm';
 import EventDetails from '../../features/events/details/EventDetails';
 
-function App() {
+export default observer(function App() {
   const location = useLocation();
 
   return (
@@ -32,6 +32,4 @@ function App() {
       />
     </>
   );
-}
-
-export default observer(App);
+});

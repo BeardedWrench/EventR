@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { Link, useHistory, useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { Button, Form, Segment } from 'semantic-ui-react';
 import { useStore } from '../../../app/stores/store';
 import { v4 as uuid } from 'uuid';
@@ -99,8 +99,7 @@ export default observer(function EventForm() {
           content="Submit"
         />
         <Button
-          as={Link}
-          to="/events"
+          onClick={() => history.goBack()}
           floated="right"
           type="button"
           content="Cancel"
