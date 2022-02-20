@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { Container } from 'semantic-ui-react';
 import Event from '../models/Event';
 import NavBar from './NavBar';
 import EventDashboard from '../../features/events/dashboard/EventDashboard';
 import { v4 as uuid } from 'uuid';
+import agent from '../api/agent';
+import LoadingComponent from './LoadingComponent';
 
 function App() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -13,9 +14,19 @@ function App() {
   );
   const [editMode, setEditMode] = useState<boolean>(false);
 
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const [submitting, setSubmitting] = useState<boolean>(false);
+
   useEffect(() => {
-    axios.get<Event[]>('http://localhost:5000/api/events').then((res) => {
-      setEvents(res.data);
+    agent.Events.list().then((res) => {
+      let events: Event[] = [];
+      res.forEach((evt) => {
+        evt.date = evt.date.split('T')[0];
+        events.push(evt);
+      });
+      setEvents(events);
+      setLoading(false);
     });
   }, []);
 
@@ -37,17 +48,34 @@ function App() {
   }
 
   function handleCreateOrEditEvent(event: Event) {
-    event.id
-      ? setEvents([...events.filter((evt) => evt.id !== event.id), event])
-      : setEvents([...events, { ...event, id: uuid() }]);
-
-    setEditMode(false);
-    setSelectedEvent(event);
+    setSubmitting(true);
+    if (event.id) {
+      agent.Events.update(event).then(() => {
+        setEvents([...events.filter((evt) => evt.id !== event.id), event]);
+        setSelectedEvent(event);
+        setEditMode(false);
+        setSubmitting(false);
+      });
+    } else {
+      event.id = uuid();
+      agent.Events.create(event).then(() => {
+        setEvents([...events, event]);
+        setSelectedEvent(event);
+        setEditMode(false);
+        setSubmitting(false);
+      });
+    }
   }
 
   function handleDeleteEvent(id: string) {
-    setEvents([...events.filter((evt) => evt.id !== id)]);
+    setSubmitting(true);
+    agent.Events.delete(id).then(() => {
+      setEvents([...events.filter((evt) => evt.id !== id)]);
+      setSubmitting(false);
+    });
   }
+
+  if (loading) return <LoadingComponent content="Loading" />;
 
   return (
     <>
@@ -63,6 +91,7 @@ function App() {
           closeForm={handleFormClose}
           createOrEdit={handleCreateOrEditEvent}
           deleteEvent={handleDeleteEvent}
+          submitting={submitting}
         />
       </Container>
     </>
