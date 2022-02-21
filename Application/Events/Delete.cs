@@ -1,3 +1,4 @@
+using Application.Core;
 using MediatR;
 using Persistence;
 
@@ -5,12 +6,12 @@ namespace Application.Events
 {
     public class Delete
     {
-        public class Command : IRequest
+        public class Command : IRequest<Result<Unit>>
         {
             public Guid Id { get; set; }
         }
 
-        public class Handler : IRequestHandler<Command>
+        public class Handler : IRequestHandler<Command, Result<Unit>>
         {
             private readonly DataContext _context;
 
@@ -19,15 +20,19 @@ namespace Application.Events
                 _context = context;
             }
 
-            public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
+            public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
             {
-                var evnt = await _context.Events.FindAsync(request.Id);
+                var evt = await _context.Events.FindAsync(request.Id);
 
-                _context.Remove(evnt);
+                if (evt == null) return null;
 
-                await _context.SaveChangesAsync();
+                _context.Remove(evt);
 
-                return Unit.Value;
+                var result = await _context.SaveChangesAsync() > 0;
+
+                if (!result) return Result<Unit>.Failure("Failed to delete event.");
+
+                return Result<Unit>.Success(Unit.Value);
             }
         }
 
