@@ -14,6 +14,8 @@ export default function NavBar() {
           EventR
         </Menu.Item>
         <Menu.Item as={NavLink} to="/events" name="Events" />
+        <Menu.Item as={NavLink} to="/errors" name="Errors" />
+
         <Menu.Item>
           <Button
             as={NavLink}
