@@ -1,6 +1,7 @@
 using Domain;
 using Microsoft.AspNetCore.Mvc;
 using Application.Events;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
