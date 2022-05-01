@@ -1,31 +1,38 @@
 using Application.Core;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Domain;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 namespace Application.Events
 {
     public class Details
     {
-        public class Query : IRequest<Result<Event>>
+        public class Query : IRequest<Result<EventDto>>
         {
             public Guid Id { get; set; }
         }
 
-        public class Handler : IRequestHandler<Query, Result<Event>>
+        public class Handler : IRequestHandler<Query, Result<EventDto>>
         {
             private readonly DataContext _context;
+            private readonly IMapper _mapper;
 
-            public Handler(DataContext context)
+            public Handler(DataContext context, IMapper mapper)
             {
+                _mapper = mapper;
                 _context = context;
             }
 
-            public async Task<Result<Event>> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<Result<EventDto>> Handle(Query request, CancellationToken cancellationToken)
             {
-                var evt = await _context.Events.FindAsync(request.Id);
+                var evt = await _context.Events
+                .ProjectTo<EventDto>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync(x => x.Id == request.Id);
 
-                return Result<Event>.Success(evt);
+                return Result<EventDto>.Success(evt);
             }
         }
     }
