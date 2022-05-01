@@ -9,5 +9,24 @@ namespace Persistence
         public DataContext(DbContextOptions options) : base(options) { }
 
         public DbSet<Event> Events { get; set; }
+
+        public DbSet<EventAttendee> EventAttendees { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<EventAttendee>(x => x.HasKey(ea => new { ea.AppUserId, ea.EventId }));
+
+            builder.Entity<EventAttendee>()
+                .HasOne(u => u.AppUser)
+                .WithMany(e => e.Events)
+                .HasForeignKey(ea => ea.AppUserId);
+
+            builder.Entity<EventAttendee>()
+                .HasOne(u => u.Event)
+                .WithMany(a => a.Attendees)
+                .HasForeignKey(ea => ea.EventId);
+        }
     }
 }
