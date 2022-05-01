@@ -1,8 +1,9 @@
 import { format } from 'date-fns';
 import { observer } from 'mobx-react-lite';
 import { Link } from 'react-router-dom';
-import { Button, Header, Item, Segment, Image } from 'semantic-ui-react';
-import Event from '../../../app/models/Event';
+import { Button, Header, Item, Segment, Image, Label } from 'semantic-ui-react';
+import { Event } from '../../../app/models/Event';
+import { useStore } from '../../../app/stores/store';
 
 const eventImageStyle = {
   filter: 'brightness(40%)',
@@ -21,9 +22,20 @@ interface Props {
 }
 
 export default observer(function EventDetailedHeader({ event }: Props) {
+  const {
+    eventStore: { updateAttendance, loading, cancelEventToggle },
+  } = useStore();
   return (
     <Segment.Group>
       <Segment basic attached="top" style={{ padding: '0' }}>
+        {event.isCancelled && (
+          <Label
+            style={{ position: 'absolute', zIndex: 1000, left: -14, top: 20 }}
+            ribbon
+            color="red"
+            content="Cancelled"
+          ></Label>
+        )}
         <Image
           src={`/assets/categoryImages/${event.category}.jpg`}
           fluid
@@ -40,7 +52,12 @@ export default observer(function EventDetailedHeader({ event }: Props) {
                 />
                 <p>{format(event.date!, 'dd MMM yyyy')}</p>
                 <p>
-                  Hosted by <strong>Bob</strong>
+                  Hosted by{' '}
+                  <strong>
+                    <Link to={`/profiles/${event.host?.username}`}>
+                      {event.host?.displayName}
+                    </Link>
+                  </strong>
                 </p>
               </Item.Content>
             </Item>
@@ -48,16 +65,40 @@ export default observer(function EventDetailedHeader({ event }: Props) {
         </Segment>
       </Segment>
       <Segment clearing attached="bottom">
-        <Button color="teal">Join Event</Button>
-        <Button>Cancel attendance</Button>
-        <Button
-          as={Link}
-          to={`/manage/${event.id}`}
-          color="orange"
-          floated="right"
-        >
-          Manage Event
-        </Button>
+        {event.isHost ? (
+          <>
+            <Button
+              color={event.isCancelled ? 'green' : 'red'}
+              floated="left"
+              basic
+              content={event.isCancelled ? 'Re-activate Event' : 'Cancel Event'}
+              onClick={cancelEventToggle}
+              loading={loading}
+            />
+            <Button
+              disabled={event.isCancelled}
+              as={Link}
+              to={`/manage/${event.id}`}
+              color="orange"
+              floated="right"
+            >
+              Manage Event
+            </Button>
+          </>
+        ) : event.isGoing ? (
+          <Button loading={loading} onClick={updateAttendance}>
+            Cancel attendance
+          </Button>
+        ) : (
+          <Button
+            disabled={event.isCancelled}
+            loading={loading}
+            onClick={updateAttendance}
+            color="teal"
+          >
+            Join Event
+          </Button>
+        )}
       </Segment>
     </Segment.Group>
   );

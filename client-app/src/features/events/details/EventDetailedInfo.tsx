@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { Segment, Grid, Icon } from 'semantic-ui-react';
-import Event from '../../../app/models/Event';
+import { Event } from '../../../app/models/Event';
 import { format } from 'date-fns';
 interface Props {
   event: Event;

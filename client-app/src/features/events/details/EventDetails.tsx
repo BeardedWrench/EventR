@@ -25,12 +25,12 @@ export default observer(function EventDetails() {
     <Grid>
       <Grid.Column width={10}>
         <EventDetailedHeader event={event} />
-        <EventDetailedInfo event={event}/>
+        <EventDetailedInfo event={event} />
         <EventDetailedChat />
       </Grid.Column>
 
       <Grid.Column width={6}>
-        <EventDetailedSidebar />
+        <EventDetailedSidebar event={event} />
       </Grid.Column>
     </Grid>
   );
