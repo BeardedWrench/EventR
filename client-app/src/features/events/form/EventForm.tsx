@@ -59,7 +59,7 @@ export default observer(function EventForm() {
     }
   }
 
-  if (loadingInitial) return <LoadingComponent content="Loading Event..." />;
+  if (loadingInitial) return <LoadingComponent content="Loading..." />;
 
   return (
     <Segment clearing>

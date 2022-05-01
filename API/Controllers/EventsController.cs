@@ -7,6 +7,7 @@ namespace API.Controllers
 {
     public class EventsController : BaseApiController
     {
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetEvents()
         {
