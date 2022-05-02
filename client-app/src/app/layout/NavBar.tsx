@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Button, Container, Dropdown, Image, Menu } from 'semantic-ui-react';
 import { useStore } from '../stores/store';
@@ -7,6 +8,10 @@ export default observer(function NavBar() {
   const {
     userStore: { user, logout },
   } = useStore();
+
+  useEffect(() => {
+    console.log('MY CURRENT USER: ', user);
+  }, []);
   return (
     <Menu inverted fixed="top">
       <Container>
