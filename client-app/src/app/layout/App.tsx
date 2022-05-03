@@ -15,6 +15,7 @@ import { useStore } from '../stores/store';
 import { useEffect } from 'react';
 import LoadingComponent from './LoadingComponent';
 import ModalContainer from '../common/modals/ModalContainer';
+import ProfilePage from '../../features/profiles/ProfilePage';
 
 export default observer(function App() {
   const location = useLocation();
@@ -49,6 +50,7 @@ export default observer(function App() {
                   path={['/createEvent', '/manage/:id']}
                   component={EventForm}
                 />
+                <Route path="/profiles/:username" component={ProfilePage} />
                 <Route path="/errors" component={TestError} />
                 <Route path="/server-error" component={ServerError} />
                 <Route path="/login" component={LoginForm} />
