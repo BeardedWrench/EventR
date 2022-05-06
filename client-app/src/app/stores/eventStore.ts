@@ -178,4 +178,8 @@ export default class EventStore {
       runInAction(() => (this.loading = false));
     }
   };
+
+  clearSelectedEvent = () => {
+    this.selectedEvent = undefined;
+  };
 }
