@@ -1,4 +1,5 @@
 using Application.Core;
+using Application.Interfaces;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MediatR;
@@ -15,16 +16,18 @@ namespace Application.Events
         {
             private readonly DataContext _context;
             private readonly IMapper _mapper;
-            public Handler(DataContext context, IMapper mapper)
+            private readonly IUserAccessor _userAccessor;
+            public Handler(DataContext context, IMapper mapper, IUserAccessor userAccessor)
             {
                 _mapper = mapper;
                 _context = context;
+                _userAccessor = userAccessor;
             }
 
             public async Task<Result<List<EventDto>>> Handle(Query request, CancellationToken cancellationToken)
             {
                 var events = await _context.Events
-                .ProjectTo<EventDto>(_mapper.ConfigurationProvider)
+                .ProjectTo<EventDto>(_mapper.ConfigurationProvider, new { currentUsername = _userAccessor.GetUsername() })
                 .ToListAsync(cancellationToken);
 
                 return Result<List<EventDto>>.Success(events);

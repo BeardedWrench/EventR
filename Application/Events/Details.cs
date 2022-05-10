@@ -1,4 +1,5 @@
 using Application.Core;
+using Application.Interfaces;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domain;
@@ -19,17 +20,19 @@ namespace Application.Events
         {
             private readonly DataContext _context;
             private readonly IMapper _mapper;
+            private readonly IUserAccessor _userAccessor;
 
-            public Handler(DataContext context, IMapper mapper)
+            public Handler(DataContext context, IMapper mapper, IUserAccessor userAccessor)
             {
                 _mapper = mapper;
                 _context = context;
+                _userAccessor = userAccessor;
             }
 
             public async Task<Result<EventDto>> Handle(Query request, CancellationToken cancellationToken)
             {
                 var evt = await _context.Events
-                .ProjectTo<EventDto>(_mapper.ConfigurationProvider)
+                .ProjectTo<EventDto>(_mapper.ConfigurationProvider, new { currentUsername = _userAccessor.GetUsername() })
                 .FirstOrDefaultAsync(x => x.Id == request.Id);
 
                 return Result<EventDto>.Success(evt);
